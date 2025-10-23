@@ -20,12 +20,19 @@ public class MovementPlayer : NetworkBehaviour
     {
         if (IsServer)
         {
-            if (Keyboard.current.spaceKey.isPressed)
-            {
-                transform.position = Input.mousePosition;
-            }
+
         }
         if (!IsOwner || !IsSpawned) return;
+
+        if (Keyboard.current.spaceKey.wasReleasedThisFrame)
+        {
+            Vector2 mousePos = Input.mousePosition;
+            transform.position = mousePos;
+            Debug.Log(mousePos.x + " " + mousePos.y);
+
+            //Call_ClientRpc();
+            //Call2_ServerRpc();
+        }
 
         var multiplier = Speed * Time.deltaTime;
 
@@ -46,4 +53,17 @@ public class MovementPlayer : NetworkBehaviour
             transform.position += new Vector3(0, -multiplier, 0);
         }
     }
+
+    [ClientRpc]
+    private void Call_ClientRpc()
+    {
+        Debug.Log("RPC Client");
+    }
+
+    [ServerRpc]
+    private void Call2_ServerRpc()
+    {
+        Debug.Log("RPC Server");
+    }
+
 }
