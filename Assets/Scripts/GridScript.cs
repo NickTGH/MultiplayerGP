@@ -1,3 +1,4 @@
+using Mono.Cecil.Cil;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
@@ -13,13 +14,21 @@ public class GridScript : MonoBehaviour
 
     [SerializeField] private TileScript tilePrefab;
     [SerializeField] private Transform camera;
-    [SerializeField] private GameObject player1Grid;
+    [SerializeField] private GameObject playerGrid;
     private int[,] gridMap;
 
     public List<GameObject> playerShips;
 
+
+    private int shipTiles = 0;
+
+    private GameObject shipPreview;
+    public bool IsPlacing;
+
     private void Start()
     {
+        IsPlacing = false;
+        shipPreview = new GameObject();
         CreateGrid();
     }
 
@@ -34,7 +43,7 @@ public class GridScript : MonoBehaviour
         float tileSize = tilePrefab.GetComponent<BoxCollider2D>().bounds.size.x;
 
         Vector2Int coords = new Vector2Int(0, 0);
-        coords.x = (int)Math.Round(pos.x);
+        coords.x = (int)Math.Round(pos.x + playerGrid.transform.position.x);
         coords.y = (int)Math.Round(pos.y);
 
 
@@ -49,8 +58,8 @@ public class GridScript : MonoBehaviour
         {
             for (int y = 0; y < height; y++)
             {
-                var spawnedTIle = Instantiate(tilePrefab, new Vector3(x, y), Quaternion.identity);
-                spawnedTIle.transform.parent = player1Grid.transform;
+                var spawnedTIle = Instantiate(tilePrefab, new Vector3(x, y) + playerGrid.transform.position, Quaternion.identity);
+                spawnedTIle.transform.parent = playerGrid.transform;
                 spawnedTIle.name = $"Tile {x} {y}";
 
                 var isOffset = (x % 2 == 0 && y % 2 != 0) || (x % 2 != 0 && y % 2 == 0);
@@ -58,26 +67,53 @@ public class GridScript : MonoBehaviour
             }
         }
 
-        camera.transform.position = new Vector3((float)width / 2 - 0.5f, (float)height / 2 - 0.5f,-10);
+        //camera.transform.position = new Vector3((float)width / 2 - 0.5f, (float)height / 2 - 0.5f,-10);
     }
-
+    
     private void StartPlacement()
     {
         //Start spawning preview
         //Enable placement
+        if (IsPlacing)
+        {
+            return;
+        }
+        shipPreview = Instantiate(playerShips.First(), GetMousePosition() + playerGrid.transform.position, Quaternion.identity);
+        shipPreview.GetComponent<SpriteRenderer>().color = new Color(1f ,1f ,1f, 0.4f);
+        IsPlacing = true;
     }
 
+    private void MovePreview(GameObject shipPreview)
+    {
+        Vector2Int cords = ConvertToCoords(GetMousePosition() + playerGrid.transform.position);
+        if (shipPreview.transform.eulerAngles.z == 0)
+        {
+            shipPreview.transform.position = new Vector3(cords.x + ((shipPreview.GetComponent<ShipScript>().Length - 1) * tilePrefab.transform.localScale.x / 2), cords.y, 0);
+
+        }
+        else
+        {
+            shipPreview.transform.position = new Vector3(cords.x, cords.y + ((shipPreview.GetComponent<ShipScript>().Length - 1) * tilePrefab.transform.localScale.x / 2), 0);
+        }
+    }
     private bool CheckIfCanPlaceShip(GameObject ship, Vector2Int cords)
     {
-        if ((cords.x >= gridMap.GetLength(0) || cords.x < 0) || (cords.y >= gridMap.GetLength(1) || cords.y < 0))
+        if ((cords.x >= gridMap.GetLength(0) + playerGrid.transform.position.x || cords.x < 0 + playerGrid.transform.position.x) || (cords.y >= gridMap.GetLength(1) || cords.y < 0))
         {
             Debug.Log("Out of grid position");
             return false;
         }
         for (int i = 0; i < ship.GetComponent<ShipScript>().Length; i++)
         {
-            if (ship.transform.eulerAngles.z == 0)
+
+
+            if (shipPreview.transform.eulerAngles.z == 0)
             {
+                if (cords.x + ship.GetComponent<ShipScript>().Length > gridMap.GetLength(1))
+                {
+                    Debug.Log("Cant place there");
+                    return false;
+                }
                 if (gridMap[cords.x + i, cords.y] != 0)
                 {
                     Debug.Log("There is a ship there");
@@ -86,6 +122,11 @@ public class GridScript : MonoBehaviour
             }
             else
             {
+                if (cords.y + ship.GetComponent<ShipScript>().Length > gridMap.GetLength(0))
+                {
+                    Debug.Log("Cant place there");
+                    return false;
+                }
                 if (gridMap[cords.x, cords.y + i] != 0)
                 {
                     Debug.Log("There is a ship there");
@@ -96,46 +137,49 @@ public class GridScript : MonoBehaviour
         return true;
     }
 
-    private void PlaceShip(GameObject ship, Vector3 pos)
+    private void PlaceShip(Vector3 pos)
     {
         Vector2Int cords = ConvertToCoords(pos);
-        if (!CheckIfCanPlaceShip(ship,cords))
+        if (!CheckIfCanPlaceShip(shipPreview,cords))
             return;
-
-
 
 
         GameObject spawnedShip;
-        ShipScript shipScript = ship.GetComponent<ShipScript>();
+        ShipScript shipScript = shipPreview.GetComponent<ShipScript>();
+        float tileSize = tilePrefab.transform.localScale.x;
 
-        if (ship.transform.eulerAngles.z == 0)
+        if (shipPreview.transform.eulerAngles.z == 0)
         {
-            for (int i = 0; i < ship.GetComponent<ShipScript>().Length; i++)
+            for (int i = 0; i < shipPreview.GetComponent<ShipScript>().Length; i++)
             {
                 gridMap[cords.x + i, cords.y] = 1;
             }
-            spawnedShip = Instantiate(ship, new Vector3(cords.x + ship.transform.localScale.x / (shipScript.Length * 2), cords.y, 0), ship.transform.rotation);
+            spawnedShip = Instantiate(playerShips.FirstOrDefault(), shipPreview.transform.position, shipPreview.transform.rotation);
         }
         else 
         {
-            for (int i = 0; i < ship.GetComponent<ShipScript>().Length; i++)
+            for (int i = 0; i < shipPreview.GetComponent<ShipScript>().Length; i++)
             {
                 gridMap[cords.x, cords.y + i] = 1;
             }
-            spawnedShip = Instantiate(ship, new Vector3(cords.x, cords.y + ship.transform.localScale.x / (shipScript.Length * 2), 0), ship.transform.rotation);
+            spawnedShip = Instantiate(playerShips.FirstOrDefault(), shipPreview.transform.position, shipPreview.transform.rotation);
         }
+
+        shipTiles += shipScript.Length;
         Debug.Log($"Ship placed at: {cords.x} {cords.y}");
-        playerShips.Remove(ship);
+        Destroy(shipPreview);
+        playerShips.Remove(playerShips.First());
+        IsPlacing = false;
     }
 
-    private void RotateShip(GameObject ship)
+    private void RotateShip()
     {
-        if (ship.transform.eulerAngles.z == 0)
+        if (shipPreview.transform.eulerAngles.z == 0)
         {
-            ship.transform.eulerAngles = new Vector3(0, 0, 90);
+            shipPreview.transform.eulerAngles = new Vector3(0, 0, 90);
             return;
         }
-        ship.transform.eulerAngles = new Vector3(0, 0, 0);
+        shipPreview.transform.eulerAngles = new Vector3(0, 0, 0);
     }
 
     private Vector3 GetMousePosition()
@@ -148,13 +192,22 @@ public class GridScript : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetMouseButtonDown(0))
+
+        if (Input.GetKeyDown(KeyCode.Space))
         {
-            PlaceShip(playerShips.FirstOrDefault(), GetMousePosition());
+            StartPlacement();
         }
-        if (Input.GetKeyDown(KeyCode.R))
+        if (IsPlacing)
         {
-            RotateShip(playerShips.FirstOrDefault());
+            MovePreview(shipPreview);
+            if (Input.GetMouseButtonDown(0))
+            {
+                PlaceShip(GetMousePosition() + playerGrid.transform.position);
+            }
+            if (Input.GetKeyDown(KeyCode.R))
+            {
+                RotateShip();
+            }
         }
     }
 }
