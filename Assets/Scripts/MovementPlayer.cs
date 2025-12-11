@@ -54,8 +54,8 @@ public class MovementPlayer : NetworkBehaviour
         }
     }
 
-    [ClientRpc]
-    private void Call_ClientRpc()
+    [Rpc(SendTo.ClientsAndHost)]
+    private void Call_Rpc()
     {
         Debug.Log("RPC Client");
     }

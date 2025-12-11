@@ -52,6 +52,8 @@ SpriteRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -73,6 +75,7 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
@@ -97,6 +100,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6108704551300137981}
   - component: {fileID: 4202259865000062864}
+  - component: {fileID: 1906101733913497491}
   - component: {fileID: 5496543842267092638}
   - component: {fileID: 726848654259358019}
   m_Layer: 0
@@ -142,6 +146,8 @@ SpriteRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -163,6 +169,7 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
@@ -177,6 +184,31 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &1906101733913497491
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8658763618910095487}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
+  GlobalObjectIdHash: 1494317993
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  DeferredDespawnTick: 0
+  Ownership: 1
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0
 --- !u!114 &5496543842267092638
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -189,8 +221,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a42d25c076f7eff4e89b04e91d361992, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  baseColor: {r: 0.12960924, g: 0.7106918, b: 0.09163003, a: 1}
-  offsetColor: {r: 0.088656016, g: 0.3773585, b: 0.029666469, a: 1}
+  ShowTopMostFoldoutHeaderGroup: 1
+  baseColor: {r: 0.09019608, g: 0.7058824, b: 0.09163003, a: 1}
+  offsetColor: {r: 0.088656016, g: 0.3529412, b: 0.09019608, a: 1}
+  hitColor: {r: 0.8679245, g: 0.08460885, b: 0.08460885, a: 1}
+  missColor: {r: 0.45911938, g: 0.45911938, b: 0.45911938, a: 1}
   renderer: {fileID: 4202259865000062864}
   highlight: {fileID: 2953642731107434520}
 --- !u!61 &726848654259358019

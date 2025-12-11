@@ -1,18 +1,23 @@
+using Unity.Netcode;
 using UnityEngine;
 
-public class TileScript : MonoBehaviour
+public class TileScript : NetworkBehaviour
 {
-    [SerializeField] private Color baseColor, offsetColor;
+    [SerializeField] private Color baseColor, offsetColor, hitColor, missColor;
     [SerializeField] private SpriteRenderer renderer;
     [SerializeField] private GameObject highlight;
 
-
-    // by default = 0, if there is a ship = 1, if the ship has been hit = 2
-    [SerializeField] private int value;
-
-    public void Init(bool isOffset)
+    [Rpc(SendTo.ClientsAndHost)]
+    public void Init_Rpc(bool isOffset)
     {
         renderer.color = isOffset? offsetColor : baseColor;
+    }
+
+    [Rpc(SendTo.ClientsAndHost)]
+    public void OnHit_Rpc(bool isShip)
+    {
+        Debug.Log("TURNING REDD");
+        renderer.color = isShip ? hitColor : missColor;
     }
 
     private void OnMouseEnter()
